@@ -6,7 +6,6 @@ export default class UserQuery {
                 SELECT *
                 FROM profile
                 WHERE name = '${name}'
-                LIMIT 1
             `)
 
             return allowedUser.rows[0];
@@ -15,12 +14,12 @@ export default class UserQuery {
         }
     }
 
-    public static async addUser(db: any, name: string, hash: string): Promise<void> {
+    public static async addUser(db: any, name: string, hash: string, token: string): Promise<void> {
         try {
             await db.query(`
                 INSERT INTO profile 
-                (name, password)
-                VALUES ('${name}', '${hash}')
+                (name, password, token)
+                VALUES ('${name}', '${hash}', '${token}')
             `)
         } catch(e) {
             throw new Error(e);

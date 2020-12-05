@@ -18,37 +18,72 @@ router.post('/user/login', async (req: Request, res: any): Promise<void> => {
         db = await dbConnect();
 
         let allowedUser = await UserQuery.getUser(db, name);
+        if(!allowedUser) throw new Error("You don't have access");
 
-        if(allowedUser) {
-            const isPassword: boolean = await bcrypt.compare(password, allowedUser.password);
-            if(!isPassword) {
-                throw new Error("You don't have access");
-            } else if(isPassword) {
-                const db = await dbConnect();
-                await db.end();
+        const isPassword: boolean = await bcrypt.compare(password, allowedUser.password);
+        if(!isPassword) throw new Error("You don't have access");
 
-                const token: any =  jwt.sign(
-                    {
-                        name,
-                    },
-                    config.get('jwtSecret'),
-                    {
-                        expiresIn: '12h'
-                    }
-                );
-
-                await UserQuery.updateToken(db, name, token);                
-
-                res.json({
-                    message: `Hi ${name}! :)`,
-                    status: 1,
-                    name,
-                    token
-                })
+        const token: any =  jwt.sign(
+            {
+                name,
+            },
+            config.get('jwtSecret'),
+            {
+                expiresIn: '12h'
             }
-        } else {
-            throw new Error("You don't have access");
-        };
+        );
+
+        await UserQuery.updateToken(db, name, token);                
+
+        res.json({
+            message: `Hi ${name}! :)`,
+            status: 1,
+            name,
+            token
+        })
+    } catch(e) {
+        const err = {message: e.message, stack: e.stack};
+
+        res.json({
+            message: err,
+            status: 0
+        })
+    } finally {
+        db && db.end();
+    }
+})
+
+router.post('/user/create-profile', async (req: Request, res: any): Promise<void> => {
+    const request: any = req.body;
+    let {name, password} = request;
+    name = name.toLowerCase();
+    let db: any;
+
+    try {
+        db = await dbConnect();
+
+        let isNameBusy = await UserQuery.getUser(db, name);
+        if(isNameBusy) throw new Error("Such user already exists");
+
+        const hash = await bcrypt.hash(password, 15);
+        const token: any =  jwt.sign(
+            {
+                name,
+            },
+            config.get('jwtSecret'),
+            {
+                expiresIn: '12h'
+            }
+        );
+
+        await UserQuery.addUser(db, name, hash, token);
+
+        res.json({
+            message: `Profile ${name} has been created`,
+            status: 1,
+            name,
+            token
+        })
     } catch(e) {
         const err = {message: e.message, stack: e.stack};
 
@@ -123,11 +158,7 @@ router.post('/user/auth', async (req: Request, res: any): Promise<void> => {
     try {   
         const verToken: any = jwt.verify(token, config.get('jwtSecret'));
         await checkToken(token, verToken.name);
-        db = await dbConnect();
-       
-        const user = await UserQuery.getUser(db, verToken.name);
-
-        await db.end();
+        
         res.json({
             message: `Hi ${verToken.name}! :)`,
             status: 1,

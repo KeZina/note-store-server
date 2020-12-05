@@ -1,7 +1,8 @@
 import http from 'http';
 import express from 'express';
 import config from 'config';
-import user from './routes/user';
+import user from './route/user';
+import note from './route/note';
 
 const app: any = express();
 const port: number = config.get('port');
@@ -9,6 +10,7 @@ const port: number = config.get('port');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(user);
+app.use(note);
 
 const start = async (): Promise<void> => {
     try {
@@ -19,7 +21,7 @@ const start = async (): Promise<void> => {
         });
 
         server.listen(port, () => {          
-            console.log(`Start Server`);
+            console.log(`Start server on ${port}`);
         });
     } catch(e) {
         console.log(`start server error: ${e.message}`);

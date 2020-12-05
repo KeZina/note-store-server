@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+      "module": "commonjs",
+      "target": "esnext",
+      "noImplicitAny": true,
+      "moduleResolution": "node",
+      "sourceMap": true,
+      "outDir": "dist",
+      "baseUrl": ".",
+      // "paths": {
+      //   "*": [
+      //     "node_modules/",
+      //     "src/enum/*"
+      //   ]
+      // },
+      "types": ["node"],
+      "allowSyntheticDefaultImports": true,
+      "esModuleInterop": true,            
+    },
+    "include": [
+      "src/**/*"
+    ]
+  }

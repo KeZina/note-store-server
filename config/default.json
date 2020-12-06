@@ -1,0 +1,14 @@
+{
+    "port": 5000,
+    "db": {
+        "driver": "pg",
+        "host": "localhost",
+        "port": "5432",
+        "user": "postgres",
+        "password": "123456",      
+        "database": "note-store",
+        "schema": "public",
+        "timezone": "utc"
+    },
+    "jwtSecret": "it_is_an_impossible_to_hack_jwt_secret"
+}

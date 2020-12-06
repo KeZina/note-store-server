@@ -4,7 +4,7 @@ import dbConnect from "../src/utils/db-connect";
 import createHash from "../src/utils/create-hash";
 import createJwt from "../src/utils/create-jwt";
 
-describe('check user and not query', () => {
+describe('check note query', () => {
   beforeAll(async () => {
     const db: any = await dbConnect();
     const hash: string = await createHash('test_password');

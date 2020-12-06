@@ -1,12 +1,28 @@
 export default class NoteQuery {
 
-    public static async createNote(db: any, user: string, title: string, content: string): Promise<void> {
+    public static async getNote(db: any, noteId: number): Promise<any[]> {
         try {
-            await db.query(`
+            const note: any = await db.query(`
+                SELECT * FROM note
+                WHERE id = ${noteId}
+            `)
+
+            return note.rows[0];
+        } catch(e) {
+            throw new Error(e);
+        }
+    }
+
+    public static async createNote(db: any, user: string, title: string, content: string): Promise<number> {
+        try {
+            const note: any = await db.query(`
                 INSERT INTO note
                 (owner, content, created, title)
                 VALUES ('${user}', '${content}', to_timestamp(${Date.now() / 1000})::timestamp, '${title}')
+                RETURNING id
             `)
+
+            return note.rows[0].id;
         } catch(e) {
             throw new Error(e);
         }
@@ -24,6 +40,17 @@ export default class NoteQuery {
         }
     }
 
+    public static async deleteNote(db: any, noteId: number): Promise<void> {
+        try {
+            await db.query(`
+                DELETE FROM note
+                WHERE id = ${noteId}
+            `)
+        } catch(e) {
+            throw new Error(e);
+        }
+    }
+
     public static async getNoteList(db: any, user: string): Promise<any[]> {
         try {
             const list: any = await db.query(`
@@ -33,19 +60,6 @@ export default class NoteQuery {
             `)
 
             return list.rows;
-        } catch(e) {
-            throw new Error(e);
-        }
-    }
-
-    public static async getNote(db: any, noteId: number): Promise<any[]> {
-        try {
-            const noteData: any = await db.query(`
-                SELECT * FROM note
-                WHERE id = ${noteId}
-            `)
-
-            return noteData.rows[0];
         } catch(e) {
             throw new Error(e);
         }

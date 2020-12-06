@@ -26,6 +26,17 @@ export default class UserQuery {
         }
     }
 
+    public static async deleteUser(db: any, name: string): Promise<void> {
+        try {
+            await db.query(`
+                DELETE FROM profile
+                WHERE name = '${name}'
+            `)
+        } catch(e) {
+            throw new Error(e);
+        }
+    }
+
     public static async updateToken(db: any, name: string, token: string): Promise<void> {
         try {
             await db.query(`

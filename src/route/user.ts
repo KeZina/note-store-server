@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken';
 import config from 'config';
 import UserQuery from '../query/user-query';
 import checkToken from '../utils/check-token';
+import createJwt from '../utils/create-jwt';
+import createHash from '../utils/create-hash';
 
 const router: any = express.Router();
 
@@ -23,16 +25,7 @@ router.post('/user/login', async (req: Request, res: any): Promise<void> => {
         const isPassword: boolean = await bcrypt.compare(password, allowedUser.password);
         if(!isPassword) throw new Error("You don't have access");
 
-        const token: any =  jwt.sign(
-            {
-                name,
-            },
-            config.get('jwtSecret'),
-            {
-                expiresIn: '12h'
-            }
-        );
-
+        const token: string =  createJwt(name);
         await UserQuery.updateToken(db, name, token);                
 
         res.json({
@@ -65,16 +58,8 @@ router.post('/user/create-profile', async (req: Request, res: any): Promise<void
         let isNameBusy = await UserQuery.getUser(db, name);
         if(isNameBusy) throw new Error("Such user already exists");
 
-        const hash = await bcrypt.hash(password, 15);
-        const token: any =  jwt.sign(
-            {
-                name,
-            },
-            config.get('jwtSecret'),
-            {
-                expiresIn: '12h'
-            }
-        );
+        const hash: string = await createHash(password);
+        const token: string =  createJwt(name);
 
         await UserQuery.addUser(db, name, hash, token);
 
@@ -104,8 +89,8 @@ router.post('/user/change-pass', async (req: Request, res: any): Promise<void> =
     try {
         await checkToken(token, name);
         db = await dbConnect();
-        const hash = await bcrypt.hash(password, 15);
 
+        const hash: string = await createHash(password);
         await UserQuery.updatePassword(db, hash, token);
 
         res.json({
